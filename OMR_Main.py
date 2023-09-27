@@ -5,14 +5,18 @@ import utlis
 
 ########################################################################
 webCamFeed = True
-pathImage = "5.jpg"
+pathImage = "fifty_items_trial.png"
 cap = cv2.VideoCapture(1)
 cap.set(10,160)
-heightImg = 700
-widthImg  = 700
-questions=5
-choices=5
-ans= [1,2,0,2,4]
+heightImg = 877
+widthImg  = 620
+questions = 50
+choices = 5
+ans= [1,4,3,1,1,4,4,4,3,3,
+      1,3,4,2,1,1,2,4,4,4,
+      4,1,2,1,4,3,2,4,1,2,
+      3,3,1,2,3,1,2,2,1,4,
+      4,3,4,4,3,4,3,2,1,2]
 ########################################################################
 
 
