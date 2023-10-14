@@ -4,23 +4,19 @@ import utlis
 
 
 ########################################################################
-webCamFeed = True
-pathImage = "fifty_items_trial.png"
-cap = cv2.VideoCapture(1)
+webCamFeed = False
+pathImage = "pic1.png"
+cap = cv2.VideoCapture(0)
 cap.set(10,160)
-heightImg = 877
-widthImg  = 620
-questions = 50
-choices = 5
-ans= [1,4,3,1,1,4,4,4,3,3,
-      1,3,4,2,1,1,2,4,4,4,
-      4,1,2,1,4,3,2,4,1,2,
-      3,3,1,2,3,1,2,2,1,4,
-      4,3,4,4,3,4,3,2,1,2]
+heightImg =  1080 #540 # 794 - for A4 aspect ratio
+widthImg  =  1020 #960 # 1123 - for A4 aspect ratio
+questions = 20
+choices = 15
+ans= {1: 'C', 2: 'A', 3: 'A', 4: 'A', 5: 'B', 6: 'A', 7: 'A', 8: 'A', 9: 'B', 10: 'A', 11: 'C', 12: 'D', 13: 'C', 14: 'B', 15: 'A', 16: 'B', 17: 'B', 18: 'B', 19: 'B', 20: 'B', 21: 'A', 22: 'B', 23: 'C', 24: 'D', 25: 'C', 26: 'B', 27: 'A', 28: 'B', 29: 'C', 30: 'D', 31: 'B', 32: 'C', 33: 'C', 34: 'B', 35: 'A', 36: 'B', 37: 'C', 38: 'D', 39: 'D', 40: 'D', 41: 'X', 42: 'A', 43: 'B', 44: 'C', 45: 'D', 46: 'C', 47: 'B', 48: 'A', 49: 'A', 50: 'A'}
 ########################################################################
 
 
-count=0
+items_match=0
 
 while True:
 
@@ -53,7 +49,10 @@ while True:
             pts1 = np.float32(biggestPoints) # PREPARE POINTS FOR WARP
             pts2 = np.float32([[0, 0],[widthImg, 0], [0, heightImg],[widthImg, heightImg]]) # PREPARE POINTS FOR WARP
             matrix = cv2.getPerspectiveTransform(pts1, pts2) # GET TRANSFORMATION MATRIX
+            # imgWarpColoredResizedJL = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
+            # imgWarpColored = cv2.resize(imgWarpColoredResizedJL, (794, 1123)) # RESIZE TO A4 RATIO JL
             imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
+            # cv2.imshow('Birds-eye-view', imgWarpColored)
 
             # SECOND BIGGEST RECTANGLE WARPING
             cv2.drawContours(imgBigContour, gradePoints, -1, (255, 0, 0), 20) # DRAW THE BIGGEST CONTOUR
@@ -62,18 +61,20 @@ while True:
             ptsG2 = np.float32([[0, 0], [325, 0], [0, 150], [325, 150]])  # PREPARE POINTS FOR WARP
             matrixG = cv2.getPerspectiveTransform(ptsG1, ptsG2)# GET TRANSFORMATION MATRIX
             imgGradeDisplay = cv2.warpPerspective(img, matrixG, (325, 150)) # APPLY WARP PERSPECTIVE
+            cv2.imshow('Grade', imgGradeDisplay)
 
             # APPLY THRESHOLD
             imgWarpGray = cv2.cvtColor(imgWarpColored,cv2.COLOR_BGR2GRAY) # CONVERT TO GRAYSCALE
             imgThresh = cv2.threshold(imgWarpGray, 170, 255,cv2.THRESH_BINARY_INV )[1] # APPLY THRESHOLD AND INVERSE
+            # cv2.imshow('Inverse-color', imgThresh)
 
-            boxes = utlis.splitBoxes(imgThresh) # GET INDIVIDUAL BOXES
-            cv2.imshow("Split Test ", boxes[3])
+            boxes = utlis.splitBoxes(imgThresh) # GET INDIVIDUAL BOXES                      
+            # cv2.imshow("Split Test ", boxes[23])
             countR=0
             countC=0
             myPixelVal = np.zeros((questions,choices)) # TO STORE THE NON ZERO VALUES OF EACH BOX
             for image in boxes:
-                #cv2.imshow(str(countR)+str(countC),image)
+                # cv2.imshow(str(countR)+str(countC),image)
                 totalPixels = cv2.countNonZero(image)
                 myPixelVal[countR][countC]= totalPixels
                 countC += 1
@@ -83,19 +84,35 @@ while True:
             myIndex=[]
             for x in range (0,questions):
                 arr = myPixelVal[x]
-                myIndexVal = np.where(arr == np.amax(arr))
-                myIndex.append(myIndexVal[0][0])
-            #print("USER ANSWERS",myIndex)
+                myIndexVal = np.where(arr >= (np.amax(arr))-400)
+                myIndex.append(myIndexVal)
+            # print("USER ANSWERS",myIndex)
+
+            # JL convert to dictionary
+            cleanedList = utlis.reformatAnswers(myIndex)
+            answersDictFormat = utlis.sortReformattedAnswers(cleanedList) 
+            print(answersDictFormat)
+
+            # Rename dicts
+            dict_a = ans
+            dict_b = answersDictFormat
+
+            # Initialize a counter
+            items_match = 0
+
+            # Iterate through keys in dict_a
+            for key, value_a in dict_a.items():
+                # Check if the key exists in dict_b and has the same value
+                if key in dict_b and dict_b[key] == value_a:
+                    items_match += 1
+
+            # Print the count of keys with the same values in both dictionaries
+            print("Number of keys with the same values in both dictionaries:", items_match)
 
             # COMPARE THE VALUES TO FIND THE CORRECT ANSWERS
-            grading=[]
-            for x in range(0,questions):
-                if ans[x] == myIndex[x]:
-                    grading.append(1)
-                else:grading.append(0)
-            #print("GRADING",grading)
-            score = (sum(grading)/questions)*100 # FINAL GRADE
-            #print("SCORE",score)
+            grading = 1
+            score = (items_match/50)*100 # FINAL GRADE
+            print("SCORE",score)
 
             # DISPLAYING ANSWERS
             utlis.showAnswers(imgWarpColored,myIndex,grading,ans) # DRAW DETECTED ANSWERS
@@ -117,8 +134,8 @@ while True:
             imgFinal = cv2.addWeighted(imgFinal, 1, imgInvGradeDisplay, 1,0)
 
             # IMAGE ARRAY FOR DISPLAY
-            imageArray = ([img,imgGray,imgCanny,imgContours],
-                          [imgBigContour,imgThresh,imgWarpColored,imgFinal])
+            imageArray = ([img,imgGray, imgCanny, imgContours],
+                          [imgBigContour, imgThresh, imgWarpColored, imgFinal])
             cv2.imshow("Final Result", imgFinal)
     except:
         imageArray = ([img,imgGray,imgCanny,imgContours],
@@ -129,15 +146,15 @@ while True:
               ["Biggest Contour","Threshold","Warpped","Final"]]
 
     stackedImage = utlis.stackImages(imageArray,0.5,lables)
-    cv2.imshow("Result",stackedImage)
+    cv2.imshow("Result", stackedImage)
 
     # SAVE IMAGE WHEN 's' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('s'):
-        cv2.imwrite("Scanned/myImage"+str(count)+".jpg",imgFinal)
+        cv2.imwrite("Scanned/myImage"+str(items_match)+".jpg",imgFinal)
         cv2.rectangle(stackedImage, ((int(stackedImage.shape[1] / 2) - 230), int(stackedImage.shape[0] / 2) + 50),
                       (1100, 350), (0, 255, 0), cv2.FILLED)
         cv2.putText(stackedImage, "Scan Saved", (int(stackedImage.shape[1] / 2) - 200, int(stackedImage.shape[0] / 2)),
                     cv2.FONT_HERSHEY_DUPLEX, 3, (0, 0, 255), 5, cv2.LINE_AA)
         cv2.imshow('Result', stackedImage)
         cv2.waitKey(300)
-        count += 1
+        items_match += 1

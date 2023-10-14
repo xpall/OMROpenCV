@@ -47,7 +47,7 @@ def reorder(myPoints):
     print(add)
     print(np.argmax(add))
     myPointsNew[0] = myPoints[np.argmin(add)]  #[0,0]
-    myPointsNew[3] =myPoints[np.argmax(add)]   #[w,h]
+    myPointsNew[3] = myPoints[np.argmax(add)]   #[w,h]
     diff = np.diff(myPoints, axis=1)
     myPointsNew[1] =myPoints[np.argmin(diff)]  #[w,0]
     myPointsNew[2] = myPoints[np.argmax(diff)] #[h,0]
@@ -60,13 +60,14 @@ def rectContour(contours):
     max_area = 0
     for i in contours:
         area = cv2.contourArea(i)
-        if area > 50:
+        print(area)
+        if area > 600:
             peri = cv2.arcLength(i, True)
             approx = cv2.approxPolyDP(i, 0.02 * peri, True)
             if len(approx) == 4:
                 rectCon.append(i)
     rectCon = sorted(rectCon, key=cv2.contourArea,reverse=True)
-    #print(len(rectCon))
+    # print(len(rectCon))
     return rectCon
 
 def getCornerPoints(cont):
@@ -75,15 +76,15 @@ def getCornerPoints(cont):
     return approx
 
 def splitBoxes(img):
-    rows = np.vsplit(img,5)
+    rows = np.vsplit(img,20)
     boxes=[]
     for r in rows:
-        cols= np.hsplit(r,5)
+        cols= np.hsplit(r,15)
         for box in cols:
             boxes.append(box)
     return boxes
 
-def drawGrid(img,questions=5,choices=5):
+def drawGrid(img,questions=20,choices=4):
     secW = int(img.shape[1]/questions)
     secH = int(img.shape[0]/choices)
     for i in range (0,9):
@@ -96,7 +97,7 @@ def drawGrid(img,questions=5,choices=5):
 
     return img
 
-def showAnswers(img,myIndex,grading,ans,questions=5,choices=5):
+def showAnswers(img,myIndex,grading,ans,questions=20,choices=15):
      secW = int(img.shape[1]/questions)
      secH = int(img.shape[0]/choices)
 
@@ -119,6 +120,50 @@ def showAnswers(img,myIndex,grading,ans,questions=5,choices=5):
             cv2.circle(img,((correctAns * secW)+secW//2, (x * secH)+secH//2),
             20,myColor,cv2.FILLED)
 
+# JL FUNCTIONS - ARRAY TO CLEAN LIST
+def reformatAnswers(listOfUserAnswers):
+    reformattedList = []
+    for item in listOfUserAnswers:
+        cleaned_item = item[0].tolist() if isinstance(item[0], np.ndarray) else item[0]
+        reformattedList.append(cleaned_item)
+    return reformattedList
 
+def sortReformattedAnswers(cleanedList):
+    sortedDict = {
+                1: 'X', 2: 'X', 3: 'X', 4: 'X', 5: 'X',
+                6: 'X', 7: 'X', 8: 'X', 9: 'X', 10: 'X',
+                11: 'X', 12: 'X', 13: 'X', 14: 'X', 15: 'X', 
+                16: 'X', 17: 'X', 18: 'X', 19: 'X', 20: 'X',
+                21: 'X', 22: 'X', 23: 'X', 24: 'X', 25: 'X',
+                26: 'X', 27: 'X', 28: 'X', 29: 'X', 30: 'X', 
+                31: 'X', 32: 'X', 33: 'X', 34: 'X', 35: 'X', 
+                36: 'X', 37: 'X', 38: 'X', 39: 'X', 40: 'X', 
+                41: 'X', 42: 'X', 43: 'X', 44: 'X', 45: 'X', 
+                46: 'X', 47: 'X', 48: 'X', 49: 'X', 50: 'X'
+                }
+    counter = 1
+    for item in cleanedList:
+        for i in item:
+            if i <= 4:
+                sortedDict[counter] = convertToMCQ(i)
+            elif i <= 9:
+                sortedDict[counter + 20] = convertToMCQ(i)
+            elif i <= 14:
+                sortedDict[counter + 30] = convertToMCQ(i)
+        counter += 1
+    sortedDict = dict(sorted(sortedDict.items()))
+    return sortedDict
 
-
+    # Convert to ABCD
+def convertToMCQ(i):
+    if i == 1 or i == 6 or i == 11:
+        i = 'A'
+    elif i == 2 or i == 7 or i == 12:
+        i = 'B'
+    elif i == 3 or i == 8 or i == 13:
+        i = 'C'
+    elif i == 4 or i == 9 or i == 14:
+        i = 'D'
+    else:
+        i = 'X'
+    return i
