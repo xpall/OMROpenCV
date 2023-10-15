@@ -41,11 +41,11 @@ def stackImages(imgArray,scale,lables=[]):
 def reorder(myPoints):
 
     myPoints = myPoints.reshape((4, 2)) # REMOVE EXTRA BRACKET
-    print(myPoints)
+    # print(myPoints)
     myPointsNew = np.zeros((4, 1, 2), np.int32) # NEW MATRIX WITH ARRANGED POINTS
     add = myPoints.sum(1)
-    print(add)
-    print(np.argmax(add))
+    # print(add)
+    # print(np.argmax(add))
     myPointsNew[0] = myPoints[np.argmin(add)]  #[0,0]
     myPointsNew[3] = myPoints[np.argmax(add)]   #[w,h]
     diff = np.diff(myPoints, axis=1)
@@ -60,7 +60,7 @@ def rectContour(contours):
     max_area = 0
     for i in contours:
         area = cv2.contourArea(i)
-        print(area)
+        # print(area)
         if area > 600:
             peri = cv2.arcLength(i, True)
             approx = cv2.approxPolyDP(i, 0.02 * peri, True)
@@ -99,8 +99,8 @@ def drawGrid(img,questions=20,choices=15):
 
 # JL SHOW ANSWERS (GREEN AND RED) 
 def showAnswers(img,myIndex,grading,ans,questions=20,choices=15):
-    secH = int(img.shape[0]/choices) 
-    secW = int(img.shape[1]/questions) 
+    secH = int(img.shape[0]/questions) 
+    secW = int(img.shape[1]/choices) 
 
     for rows in range(0,questions):             # loop for twenty rows
         studentAnswer = myIndex[rows]           # get values per rows
@@ -110,8 +110,16 @@ def showAnswers(img,myIndex,grading,ans,questions=20,choices=15):
         # print(f'isItCorrect={isItCorrect}')
         # print(f'correctAnswer={correctAnswer}')
 
+        # insert checker if studentAnswer != correctAnswer
+        # if range(len(studentAnswer)) > range(len(correctAns)):
+        #     popme = range(len(studentAnswer)) - range(len(correctAns))
+        #     print(popme)
+        #     for i in popme:
+        #         studentAnswer.pop()
+
+        # BACKUP 
         if range(len(studentAnswer) > 3):
-            studentAnswer.pop(3)
+            studentAnswer.pop(2)
 
         for circleIndex in range(len(studentAnswer)):                 # loop per values
             centerX = (studentAnswer[circleIndex] * secW) + secW // 2 

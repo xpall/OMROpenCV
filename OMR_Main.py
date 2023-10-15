@@ -51,7 +51,7 @@ while True:
             # imgWarpColoredResizedJL = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
             # imgWarpColored = cv2.resize(imgWarpColoredResizedJL, (794, 1123)) # RESIZE TO A4 RATIO JL
             imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
-            cv2.imshow('Birds-eye-view', imgWarpColored)
+            # cv2.imshow('Birds-eye-view', imgWarpColored)
 
             # SECOND BIGGEST RECTANGLE WARPING
             cv2.drawContours(imgBigContour, gradePoints, -1, (255, 0, 0), 20) # DRAW THE BIGGEST CONTOUR
@@ -60,12 +60,12 @@ while True:
             ptsG2 = np.float32([[0, 0], [325, 0], [0, 150], [325, 150]])  # PREPARE POINTS FOR WARP
             matrixG = cv2.getPerspectiveTransform(ptsG1, ptsG2)# GET TRANSFORMATION MATRIX
             imgGradeDisplay = cv2.warpPerspective(img, matrixG, (325, 150)) # APPLY WARP PERSPECTIVE
-            cv2.imshow('Grade', imgGradeDisplay)
+            # cv2.imshow('Grade', imgGradeDisplay)
 
             # APPLY THRESHOLD
             imgWarpGray = cv2.cvtColor(imgWarpColored,cv2.COLOR_BGR2GRAY) # CONVERT TO GRAYSCALE
-            imgThresh = cv2.threshold(imgWarpGray, 110, 255,cv2.THRESH_BINARY_INV )[1] # APPLY THRESHOLD AND INVERSE
-            cv2.imshow('Inverse-color', imgThresh)
+            imgThresh = cv2.threshold(imgWarpGray, 100, 255,cv2.THRESH_BINARY_INV )[1] # APPLY THRESHOLD AND INVERSE
+            # cv2.imshow('Inverse-color', imgThresh)
 
             boxes = utlis.splitBoxes(imgThresh) # GET INDIVIDUAL BOXES                      
             # cv2.imshow('Split Test ', boxes[17])
@@ -83,7 +83,7 @@ while True:
             myIndex=[]
             for x in range (0,questions):
                 arr = myPixelVal[x]
-                myIndexVal = np.where(arr >= (np.amax(arr))-1200)
+                myIndexVal = np.where(arr >= (np.amax(arr))-900)
                 myIndex.append(myIndexVal)
             # myIndexHackTry = utlis.cleanedListForGrading(myIndex)
             # print(f'myIndex: {myIndex}')
@@ -113,7 +113,7 @@ while True:
             print(f'Grading: {grading}')
 
             # Print the count of keys with the same values in both dictionaries
-            print("Match values: ", items_match)
+            # print("Match values: ", items_match)
 
             # COMPARE THE VALUES TO FIND THE CORRECT ANSWERS
             score = items_match # FINAL GRADE
@@ -122,12 +122,14 @@ while True:
             # DISPLAYING ANSWERS
             # JL remake index for grading
             myIndex = utlis.cleanedListForGrading(myIndex)
-            print(f'myIndex: {myIndex}')
-            ans = [[1, 6], [2, 7], [3, 8], [4, 9], [1, 8], [2, 7], [3, 6], [4, 7], [1, 8], [2, 9], [3, 7], [4, 7, 11], [3, 8, 12], [2, 7, 13], [1, 6, 14], [2, 7, 13], [2, 8, 12], [2, 9, 11], [2, 9, 11], [2, 9, 11]]
+            # print(f'myIndex: {myIndex}')
+            ans = [[2, 6], [3, 7], [4, 8], [3, 9], [2, 8], [3, 7], [4, 6], [2, 7], [2, 8], [3, 9], [3, 7, 11], [4, 7, 11], [3, 8, 12], [2, 7, 13], [1, 6, 14], [2, 7, 13], [2, 8, 12], [2, 9, 11], [2, 9, 11], [2, 9, 11]]
 
             # JL remake grading to match myIndex format // array of 20
             alignedGrading = utlis.alignGrading(grading)
             print(f'alignedGrading = {alignedGrading}')
+            print(f'myIndex = {myIndex}') 
+            print(f'ans = {ans}')
 
             utlis.showAnswers(imgWarpColored,myIndex,alignedGrading, ans) # DRAW DETECTED ANSWERS
             utlis.drawGrid(imgWarpColored) # DRAW GRID
@@ -138,7 +140,7 @@ while True:
 
             # DISPLAY GRADE
             imgRawGrade = np.zeros_like(imgGradeDisplay,np.uint8) # NEW BLANK IMAGE WITH GRADE AREA SIZE
-            cv2.putText(imgRawGrade,str(int(score))+"/50",(70,100)
+            cv2.putText(imgRawGrade,str(int(score))+"/50",(10,100)
                         ,cv2.FONT_HERSHEY_COMPLEX,3,(0,255,255),3) # ADD THE GRADE TO NEW IMAGE
             invMatrixG = cv2.getPerspectiveTransform(ptsG2, ptsG1) # INVERSE TRANSFORMATION MATRIX
             imgInvGradeDisplay = cv2.warpPerspective(imgRawGrade, invMatrixG, (widthImg, heightImg)) # INV IMAGE WARP
