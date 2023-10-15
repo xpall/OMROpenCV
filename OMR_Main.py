@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import utlis
-
+import datetime
 
 ########################################################################
 webCamFeed = True
@@ -166,11 +166,15 @@ while True:
 
     # SAVE IMAGE WHEN 's' key is pressed
     if cv2.waitKey(1) & 0xFF == ord('s'):
-        cv2.imwrite("Scanned/myImage"+str(items_match)+".jpg",imgFinal)
+        currentDateTime = datetime.datetime.now()
+        formattedCDT = currentDateTime.replace(microsecond=0)
+
+        cv2.imwrite("Checked/"+str(formattedCDT)+".jpg",imgFinal)
+        cv2.imwrite("forItemAnalysis/"+str(formattedCDT)+".jpg",imgThresh)
         cv2.rectangle(stackedImage, ((int(stackedImage.shape[1] / 2) - 230), int(stackedImage.shape[0] / 2) + 50),
                       (1100, 350), (0, 255, 0), cv2.FILLED)
         cv2.putText(stackedImage, "Scan Saved", (int(stackedImage.shape[1] / 2) - 200, int(stackedImage.shape[0] / 2)),
                     cv2.FONT_HERSHEY_DUPLEX, 3, (0, 0, 255), 5, cv2.LINE_AA)
         cv2.imshow('Result', stackedImage)
         cv2.waitKey(300)
-        items_match += 1
+        # items_match += 1

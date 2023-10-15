@@ -110,16 +110,19 @@ def showAnswers(img,myIndex,grading,ans,questions=20,choices=15):
         # print(f'isItCorrect={isItCorrect}')
         # print(f'correctAnswer={correctAnswer}')
 
-        # insert checker if studentAnswer != correctAnswer
         # if range(len(studentAnswer)) > range(len(correctAns)):
         #     popme = range(len(studentAnswer)) - range(len(correctAns))
         #     print(popme)
         #     for i in popme:
         #         studentAnswer.pop()
 
+        # insert checker if studentAnswer != correctAnswer
         # BACKUP 
-        if range(len(studentAnswer) > 3):
-            studentAnswer.pop(2)
+        if range(len(studentAnswer) > 2 and rows < 10):
+            popMe = range(len(studentAnswer)) - range(len(correctAnswer))
+            studentAnswer.pop(2, 3, 4)
+        if range(len(studentAnswer) > 3 and rows >= 10):
+            studentAnswer.pop(1)
 
         for circleIndex in range(len(studentAnswer)):                 # loop per values
             centerX = (studentAnswer[circleIndex] * secW) + secW // 2 
