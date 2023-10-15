@@ -84,10 +84,10 @@ def splitBoxes(img):
             boxes.append(box)
     return boxes
 
-def drawGrid(img,questions=20,choices=4):
-    secW = int(img.shape[1]/questions)
-    secH = int(img.shape[0]/choices)
-    for i in range (0,9):
+def drawGrid(img,questions=20,choices=15):
+    secW = int(img.shape[1]/15)
+    secH = int(img.shape[0]/20)
+    for i in range (0,20):
         pt1 = (0,secH*i)
         pt2 = (img.shape[1],secH*i)
         pt3 = (secW * i, 0)
@@ -97,28 +97,43 @@ def drawGrid(img,questions=20,choices=4):
 
     return img
 
+# JL SHOW ANSWERS (GREEN AND RED) 
 def showAnswers(img,myIndex,grading,ans,questions=20,choices=15):
-     secW = int(img.shape[1]/questions)
-     secH = int(img.shape[0]/choices)
+    secH = int(img.shape[0]/choices) 
+    secW = int(img.shape[1]/questions) 
 
-     for x in range(0,questions):
-         myAns= myIndex[x]
-         cX = (myAns * secW) + secW // 2
-         cY = (x * secH) + secH // 2
-         if grading[x]==1:
-            myColor = (0,255,0)
-            #cv2.rectangle(img,(myAns*secW,x*secH),((myAns*secW)+secW,(x*secH)+secH),myColor,cv2.FILLED)
-            cv2.circle(img,(cX,cY),50,myColor,cv2.FILLED)
-         else:
-            myColor = (0,0,255)
-            #cv2.rectangle(img, (myAns * secW, x * secH), ((myAns * secW) + secW, (x * secH) + secH), myColor, cv2.FILLED)
-            cv2.circle(img, (cX, cY), 50, myColor, cv2.FILLED)
+    for rows in range(0,questions):             # loop for twenty rows
+        studentAnswer = myIndex[rows]           # get values per rows
+        isItCorrect = grading[rows]
+        correctAnswer = ans[rows]
+        # print(f'studentAnswer={studentAnswer}')
+        # print(f'isItCorrect={isItCorrect}')
+        # print(f'correctAnswer={correctAnswer}')
 
-            # CORRECT ANSWER
-            myColor = (0, 255, 0)
-            correctAns = ans[x]
-            cv2.circle(img,((correctAns * secW)+secW//2, (x * secH)+secH//2),
-            20,myColor,cv2.FILLED)
+        if range(len(studentAnswer) > 3):
+            studentAnswer.pop(3)
+
+        for circleIndex in range(len(studentAnswer)):                 # loop per values
+            centerX = (studentAnswer[circleIndex] * secW) + secW // 2 
+            centerY = (rows * secH) + secH // 2         
+            # print(f'centerX={centerX}, index{circleIndex} of row{rows}')
+            # print(f'centerY={centerY}, index{circleIndex} of row{rows}')
+            # print(f'circleIndex={circleIndex}')
+
+            if isItCorrect[circleIndex]==1: #if correct
+                myColor = (0,255,0)
+                #cv2.rectangle(img,(myAns*secW,x*secH),((myAns*secW)+secW,(x*secH)+secH),myColor,cv2.FILLED)
+                cv2.circle(img,(centerX,centerY),30,myColor,cv2.FILLED)
+            else:
+                myColor = (0,0,255)
+                #cv2.rectangle(img, (myAns * secW, x * secH), ((myAns * secW) + secW, (x * secH) + secH), myColor, cv2.FILLED)
+                cv2.circle(img, (centerX, centerY), 30, myColor, cv2.FILLED)
+
+                # CORRECT ANSWER
+                myColor = (0, 255, 0)
+                correctAns = correctAnswer[circleIndex]
+                cv2.circle(img,((correctAns * secW)+secW//2, (rows * secH)+secH//2),
+                20,myColor,cv2.FILLED)
 
 # JL FUNCTIONS - ARRAY TO CLEAN LIST
 def reformatAnswers(listOfUserAnswers):
@@ -167,3 +182,33 @@ def convertToMCQ(i):
     else:
         i = 'X'
     return i
+
+def cleanedListForGrading(dirty_list):
+    cleanedList = []
+    for item in dirty_list:
+        removeTheWordArray = list(item[0])
+        cleanedList.append(removeTheWordArray)
+    return cleanedList
+
+def alignGrading(grading):
+    alignedGrades = [
+        [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], 
+        [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], 
+        [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], 
+        [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]
+        ]
+    rowNumber = 0
+    itemNumber = 0
+    for item in grading:
+        if itemNumber < 20:
+            alignedGrades[rowNumber][0] = item
+            itemNumber += 1
+            rowNumber += 1
+        elif itemNumber < 40:
+            alignedGrades[rowNumber - 20][1] = item
+            itemNumber += 1
+            rowNumber += 1
+        else:
+            alignedGrades[rowNumber - 30][2] = item
+            rowNumber += 1
+    return alignedGrades

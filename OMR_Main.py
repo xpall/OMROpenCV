@@ -4,15 +4,15 @@ import utlis
 
 
 ########################################################################
-webCamFeed = False
+webCamFeed = True
 pathImage = "pic1.png"
 cap = cv2.VideoCapture(0)
 cap.set(10,160)
 heightImg =  1080 #540 # 794 - for A4 aspect ratio
-widthImg  =  1020 #960 # 1123 - for A4 aspect ratio
+widthImg  =  1920 #960 # 1123 - for A4 aspect ratio
 questions = 20
 choices = 15
-ans= {1: 'C', 2: 'A', 3: 'A', 4: 'A', 5: 'B', 6: 'A', 7: 'A', 8: 'A', 9: 'B', 10: 'A', 11: 'C', 12: 'D', 13: 'C', 14: 'B', 15: 'A', 16: 'B', 17: 'B', 18: 'B', 19: 'B', 20: 'B', 21: 'A', 22: 'B', 23: 'C', 24: 'D', 25: 'C', 26: 'B', 27: 'A', 28: 'B', 29: 'C', 30: 'D', 31: 'B', 32: 'C', 33: 'C', 34: 'B', 35: 'A', 36: 'B', 37: 'C', 38: 'D', 39: 'D', 40: 'D', 41: 'X', 42: 'A', 43: 'B', 44: 'C', 45: 'D', 46: 'C', 47: 'B', 48: 'A', 49: 'A', 50: 'A'}
+ansDict = {1: 'C', 2: 'A', 3: 'A', 4: 'A', 5: 'B', 6: 'A', 7: 'A', 8: 'A', 9: 'B', 10: 'A', 11: 'C', 12: 'D', 13: 'C', 14: 'B', 15: 'A', 16: 'B', 17: 'B', 18: 'B', 19: 'B', 20: 'B', 21: 'A', 22: 'B', 23: 'C', 24: 'D', 25: 'C', 26: 'B', 27: 'A', 28: 'B', 29: 'C', 30: 'D', 31: 'B', 32: 'C', 33: 'C', 34: 'B', 35: 'A', 36: 'B', 37: 'C', 38: 'D', 39: 'D', 40: 'D', 41: 'A', 42: 'A', 43: 'B', 44: 'C', 45: 'D', 46: 'C', 47: 'B', 48: 'A', 49: 'A', 50: 'A'}
 ########################################################################
 
 
@@ -38,7 +38,6 @@ while True:
         rectCon = utlis.rectContour(contours) # FILTER FOR RECTANGLE CONTOURS
         biggestPoints= utlis.getCornerPoints(rectCon[0]) # GET CORNER POINTS OF THE BIGGEST RECTANGLE
         gradePoints = utlis.getCornerPoints(rectCon[1]) # GET CORNER POINTS OF THE SECOND BIGGEST RECTANGLE
-
         
 
         if biggestPoints.size != 0 and gradePoints.size != 0:
@@ -52,7 +51,7 @@ while True:
             # imgWarpColoredResizedJL = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
             # imgWarpColored = cv2.resize(imgWarpColoredResizedJL, (794, 1123)) # RESIZE TO A4 RATIO JL
             imgWarpColored = cv2.warpPerspective(img, matrix, (widthImg, heightImg)) # APPLY WARP PERSPECTIVE
-            # cv2.imshow('Birds-eye-view', imgWarpColored)
+            cv2.imshow('Birds-eye-view', imgWarpColored)
 
             # SECOND BIGGEST RECTANGLE WARPING
             cv2.drawContours(imgBigContour, gradePoints, -1, (255, 0, 0), 20) # DRAW THE BIGGEST CONTOUR
@@ -65,11 +64,11 @@ while True:
 
             # APPLY THRESHOLD
             imgWarpGray = cv2.cvtColor(imgWarpColored,cv2.COLOR_BGR2GRAY) # CONVERT TO GRAYSCALE
-            imgThresh = cv2.threshold(imgWarpGray, 170, 255,cv2.THRESH_BINARY_INV )[1] # APPLY THRESHOLD AND INVERSE
-            # cv2.imshow('Inverse-color', imgThresh)
+            imgThresh = cv2.threshold(imgWarpGray, 110, 255,cv2.THRESH_BINARY_INV )[1] # APPLY THRESHOLD AND INVERSE
+            cv2.imshow('Inverse-color', imgThresh)
 
             boxes = utlis.splitBoxes(imgThresh) # GET INDIVIDUAL BOXES                      
-            # cv2.imshow("Split Test ", boxes[23])
+            # cv2.imshow('Split Test ', boxes[17])
             countR=0
             countC=0
             myPixelVal = np.zeros((questions,choices)) # TO STORE THE NON ZERO VALUES OF EACH BOX
@@ -84,18 +83,21 @@ while True:
             myIndex=[]
             for x in range (0,questions):
                 arr = myPixelVal[x]
-                myIndexVal = np.where(arr >= (np.amax(arr))-400)
+                myIndexVal = np.where(arr >= (np.amax(arr))-1200)
                 myIndex.append(myIndexVal)
-            # print("USER ANSWERS",myIndex)
+            # myIndexHackTry = utlis.cleanedListForGrading(myIndex)
+            # print(f'myIndex: {myIndex}')
+            # print(f'myIndexHackTry: {myIndexHackTry}')
 
             # JL convert to dictionary
             cleanedList = utlis.reformatAnswers(myIndex)
             answersDictFormat = utlis.sortReformattedAnswers(cleanedList) 
-            print(answersDictFormat)
+            print(f'Answers-Dict: {answersDictFormat}')
 
             # Rename dicts
-            dict_a = ans
+            dict_a = ansDict
             dict_b = answersDictFormat
+            grading = []
 
             # Initialize a counter
             items_match = 0
@@ -105,26 +107,38 @@ while True:
                 # Check if the key exists in dict_b and has the same value
                 if key in dict_b and dict_b[key] == value_a:
                     items_match += 1
+                    grading.append(1)
+                else:
+                    grading.append(0)
+            print(f'Grading: {grading}')
 
             # Print the count of keys with the same values in both dictionaries
-            print("Number of keys with the same values in both dictionaries:", items_match)
+            print("Match values: ", items_match)
 
             # COMPARE THE VALUES TO FIND THE CORRECT ANSWERS
-            grading = 1
-            score = (items_match/50)*100 # FINAL GRADE
-            print("SCORE",score)
+            score = items_match # FINAL GRADE
+            print(f'Score: {score}')
 
             # DISPLAYING ANSWERS
-            utlis.showAnswers(imgWarpColored,myIndex,grading,ans) # DRAW DETECTED ANSWERS
+            # JL remake index for grading
+            myIndex = utlis.cleanedListForGrading(myIndex)
+            print(f'myIndex: {myIndex}')
+            ans = [[1, 6], [2, 7], [3, 8], [4, 9], [1, 8], [2, 7], [3, 6], [4, 7], [1, 8], [2, 9], [3, 7], [4, 7, 11], [3, 8, 12], [2, 7, 13], [1, 6, 14], [2, 7, 13], [2, 8, 12], [2, 9, 11], [2, 9, 11], [2, 9, 11]]
+
+            # JL remake grading to match myIndex format // array of 20
+            alignedGrading = utlis.alignGrading(grading)
+            print(f'alignedGrading = {alignedGrading}')
+
+            utlis.showAnswers(imgWarpColored,myIndex,alignedGrading, ans) # DRAW DETECTED ANSWERS
             utlis.drawGrid(imgWarpColored) # DRAW GRID
             imgRawDrawings = np.zeros_like(imgWarpColored) # NEW BLANK IMAGE WITH WARP IMAGE SIZE
-            utlis.showAnswers(imgRawDrawings, myIndex, grading, ans) # DRAW ON NEW IMAGE
+            utlis.showAnswers(imgRawDrawings, myIndex, alignedGrading, ans) # DRAW ON NEW IMAGE
             invMatrix = cv2.getPerspectiveTransform(pts2, pts1) # INVERSE TRANSFORMATION MATRIX
             imgInvWarp = cv2.warpPerspective(imgRawDrawings, invMatrix, (widthImg, heightImg)) # INV IMAGE WARP
 
             # DISPLAY GRADE
             imgRawGrade = np.zeros_like(imgGradeDisplay,np.uint8) # NEW BLANK IMAGE WITH GRADE AREA SIZE
-            cv2.putText(imgRawGrade,str(int(score))+"%",(70,100)
+            cv2.putText(imgRawGrade,str(int(score))+"/50",(70,100)
                         ,cv2.FONT_HERSHEY_COMPLEX,3,(0,255,255),3) # ADD THE GRADE TO NEW IMAGE
             invMatrixG = cv2.getPerspectiveTransform(ptsG2, ptsG1) # INVERSE TRANSFORMATION MATRIX
             imgInvGradeDisplay = cv2.warpPerspective(imgRawGrade, invMatrixG, (widthImg, heightImg)) # INV IMAGE WARP
